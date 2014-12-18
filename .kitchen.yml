@@ -1,6 +1,7 @@
 <%
   begin
-    require 'dotenv'; Dotenv.load 
+    require 'dotenv'
+    Dotenv.load 
   rescue
     $stderr.puts "Could not load dotenv"
   end
@@ -10,23 +11,26 @@ driver:
   name: ec2
   aws_access_key_id: <%= ENV['AWS_ACCESS_KEY'] %>
   aws_secret_access_key: <%= ENV['AWS_SECRET_KEY'] %>
-  aws_ssh_key_id: demandbase-california-20140821
-  region: us-west-1
-  availability_zone: us-west-1b
+  aws_ssh_key_id: demandbase-east-20130501
+  iam_profile_name: test-kitchen
+  region: us-east-1
+  availability_zone: us-east-1b
   require_chef_omnibus: true
-  iam_profile_name:  demandbase-DeployRole-1GA8L14SOS4DV
   ssh_timeout: 10
   ssh_retries: 5
-  ebs_volume_size: 6,
-  ebs_delete_on_termination: 'true'
-  ebs_device_name: '/dev/sda'
+  tags:
+    Name: test-kitchen-ebs-directory
 
 provisioner:
   name: chef_zero
   require_chef_omnibus: latest
 
 platforms:
-  - name: ubuntu-12.10
+  - name: ubuntu-14.04
+    driver: 
+      image_id: ami-8caa1ce4
+      username: ubuntu
+      flavor_id: m1.small
 
 suites:
   - name: default
