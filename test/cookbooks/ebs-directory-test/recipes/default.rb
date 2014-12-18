@@ -6,13 +6,17 @@
 
 include_recipe "ebs-directory"
 
-dir = "/test3"
+%w(/test1 /test2).each do |dir|
+  directory(dir) do
+    recursive true
+  end
 
-directory(dir) do
-  recursive true
-end
+  file("#{dir}/text.txt") do
+    content "file contents"
+  end
 
-ebs_directory(dir) do
-  size 10
-  file_system "ext4"
+  ebs_directory(dir) do
+    size 10
+    file_system "ext4"
+  end
 end

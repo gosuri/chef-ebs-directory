@@ -6,11 +6,25 @@ end
 
 action :attach do
   dir = new_resource.directory
-  Chef::Log.info "Moving #{dir} to a ebs volue"
+  if directory_mounted?(dir)
+    Chef::Log.info "#{dir} already on ebs volume. Ignoring"
+  else
+    Chef::Log.info "Moving #{dir} to a ebs volue"
+    attach_and_move(dir)
+  end
+end
 
+action :detach do
+  Chef::Log.info "detaching ebs directory"
+end
+
+private
+
+def attach_and_move(dir)
   device_id = determine_free_device_id
+  Chef::Log.debug "#{dir} Attaching a new ebs volume to #{device_id}"
   aws_ebs_volume "#{dir}_ebs_volume" do
-    size 8
+    size new_resource.size
     device device_id.gsub('xvd', 'sd')
     action [ :create, :attach ]
   end
@@ -27,10 +41,9 @@ action :attach do
     end
   end
 
-  # create a filesystem
+  Chef::Log.debug "creating a #{new_resource.file_system} file system on #{device_id}"
   execute "mkfs-#{dir}" do
     command "mkfs -t #{new_resource.file_system} #{device_id}"
-    # not_if "grep -qs #{mount_point} /proc/mounts"
   end
 
   ["/media#{dir}","/old#{dir}"].each do |d|
@@ -40,6 +53,7 @@ action :attach do
     end
   end
   
+  Chef::Log.debug "copying all files on #{dir} to /media#{dir}"
   execute "rsync #{dir} to /media#{dir}" do
     command "sudo rsync -aXS --exclude='/*/.gvfs' #{dir}/. /media#{dir}/."
   end
@@ -66,11 +80,9 @@ action :attach do
   end
 end
 
-action :detach do
-  Chef::Log.info "detaching ebs directory"
+def directory_mounted?(dir)
+  `grep -s #{dir} /proc/mounts` != ''
 end
-
-private
 
 def determine_free_device_id
   current = Dir.glob('/dev/xvd*')
