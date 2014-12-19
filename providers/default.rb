@@ -11,11 +11,13 @@ action :attach do
   else
     Chef::Log.info "Moving #{dir} to a ebs volue"
     attach_and_move(dir)
+    new_resource.updated_by_last_action(true)
   end
 end
 
 action :detach do
   Chef::Log.info "detaching ebs directory"
+  new_resource.updated_by_last_action(true)
 end
 
 private
@@ -79,13 +81,13 @@ def attach_and_move(dir)
     action :umount
   end
 
-  directory "#{dir}" do
+  directory(dir) do
     action :create
     recursive true
   end
 
   Chef::Log.info "Mounting #{dir} to #{device_id}"
-  mount "#{dir}" do
+  mount(dir) do
     device device_id
     fstype new_resource.file_system
     options 'defaults'
@@ -94,7 +96,7 @@ def attach_and_move(dir)
 end
 
 def directory_mounted?(dir)
-  `grep -s #{dir} /proc/mounts` != ''
+  Mixlib::ShellOut.new("grep -s #{dir} /proc/mounts") != ''
 end
 
 def determine_free_device_id
