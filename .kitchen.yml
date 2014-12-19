@@ -2,17 +2,16 @@
   begin
     require 'dotenv'
     Dotenv.load 
-  rescue
-    $stderr.puts "Could not load dotenv"
+  rescue LoadError
+    $stderr.puts "warning: could not load dotenv gem, variables in .env will be ignored"
   end
 %>
 
 driver:
   name: ec2
-  aws_access_key_id: <%= ENV['AWS_ACCESS_KEY'] %>
-  aws_secret_access_key: <%= ENV['AWS_SECRET_KEY'] %>
-  aws_ssh_key_id: demandbase-east-20130501
-  iam_profile_name: test-kitchen
+  aws_access_key_id: <%= ENV['AWS_ACCESS_KEY_ID'] %>
+  aws_secret_access_key: <%= ENV['AWS_SECRET_ACCESS_KEY'] %>
+  aws_ssh_key_id: <%= ENV['AWS_SSH_KEY_ID'] %>
   region: us-east-1
   availability_zone: us-east-1b
   require_chef_omnibus: true
@@ -37,3 +36,5 @@ suites:
     run_list:
       - recipe[ebs-directory-test]
     attributes:
+      aws_access_key: <%= ENV['AWS_ACCESS_KEY_ID'] %>
+      aws_secret_access_key: <%= ENV['AWS_SECRET_ACCESS_KEY'] %>

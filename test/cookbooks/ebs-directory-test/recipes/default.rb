@@ -11,11 +11,13 @@ include_recipe "ebs-directory"
     recursive true
   end
 
-  file("#{dir}/text.txt") do
+  file "#{dir}/text.txt" do
     content "file contents"
   end
 
   ebs_directory(dir) do
+    aws_access_key node[:aws_access_key]
+    aws_secret_access_key node[:aws_secret_access_key]
     size 10
     file_system "ext4"
   end
