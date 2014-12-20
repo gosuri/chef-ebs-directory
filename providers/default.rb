@@ -96,7 +96,7 @@ def attach_and_move(dir)
 end
 
 def directory_mounted?(dir)
-  Mixlib::ShellOut.new("grep -s #{dir} /proc/mounts") != ''
+  Mixlib::ShellOut.new("grep -s #{dir} /proc/mounts").run_command.stdout != ''
 end
 
 def determine_free_device_id
